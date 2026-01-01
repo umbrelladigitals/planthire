@@ -33,7 +33,6 @@ RUN echo '#!/bin/sh' > start.sh && \
     echo 'set -e' >> start.sh && \
     echo 'echo "✨ Running database migrations..."' >> start.sh && \
     echo 'npx prisma migrate deploy' >> start.sh && \
-    echo 'echo "🌱 Seeding database..."' >> start.sh && \
     echo 'echo "🚀 Starting Next.js application..."' >> start.sh && \
     echo 'exec node server.js' >> start.sh && \
     chmod +x start.sh

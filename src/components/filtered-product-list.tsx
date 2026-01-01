@@ -18,11 +18,18 @@ export function FilteredProductList() {
     async function fetchProducts() {
       try {
         setLoading(true);
-        const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/products`);
+        const res = await fetch(`/api/products`);
         
         if (!res.ok) {
-          const errorData = await res.json();
-          throw new Error(errorData.error || `Failed to fetch products: ${res.status} ${res.statusText}`);
+          const contentType = res.headers.get("content-type");
+          if (contentType && contentType.indexOf("application/json") !== -1) {
+            const errorData = await res.json();
+            throw new Error(errorData.error || `Failed to fetch products: ${res.status} ${res.statusText}`);
+          } else {
+            const text = await res.text();
+            console.error("Non-JSON error response:", text);
+            throw new Error(`Failed to fetch products: ${res.status} ${res.statusText}`);
+          }
         }
         
         const data: Product[] = await res.json();

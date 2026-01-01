@@ -42,7 +42,13 @@ export function Products() {
       try {
         const response = await fetch("/api/products");
         if (!response.ok) {
-          throw new Error(`Failed to fetch products: ${response.statusText}`);
+          const contentType = response.headers.get("content-type");
+          if (contentType && contentType.indexOf("application/json") !== -1) {
+             const errorData = await response.json();
+             throw new Error(errorData.error || `Failed to fetch products: ${response.status} ${response.statusText}`);
+          } else {
+             throw new Error(`Failed to fetch products: ${response.status} ${response.statusText}`);
+          }
         }
         const data = await response.json();
         setProducts(data);
