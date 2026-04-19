@@ -52,7 +52,7 @@ export function GalleryUploadForm({ onImageAdded }: GalleryUploadFormProps) {
       const result = await createGalleryImageAction(formData);
       if (result?.error) {
         setGeneralError(result.error);
-        if (result.fieldErrors) {
+        if ('fieldErrors' in result && result.fieldErrors) {
           setFieldErrors(result.fieldErrors as FieldErrors);
         }
       } else if (result?.success) {
@@ -86,72 +86,73 @@ export function GalleryUploadForm({ onImageAdded }: GalleryUploadFormProps) {
       }
     }}>
       <DialogTrigger asChild>
-        <Button onClick={() => setIsOpen(true)}>
-          <PlusIcon className="h-4 w-4 mr-2" />
-          Add New Image
+        <Button onClick={() => setIsOpen(true)} className="rounded-none border-2 border-slate-900 bg-slate-900 hover:bg-white hover:text-slate-900 text-white font-black uppercase tracking-widest text-sm h-11 px-6 transition-colors flex gap-2 items-center focus-visible:ring-0">
+          <PlusIcon className="h-5 w-5" />
+          NEW IMAGE
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
-          <DialogTitle>Add Gallery Image</DialogTitle>
-          <DialogDescription>
-            Upload a new image to the gallery. All fields marked with * are required.
+      <DialogContent className="w-full max-w-lg sm:max-w-xl md:max-w-2xl px-0 py-0 rounded-none border-2 border-slate-900 bg-white">
+        <DialogHeader className="p-6 border-b-2 border-slate-900 bg-slate-50">
+          <DialogTitle className="text-2xl font-black uppercase tracking-widest text-slate-900">Add Gallery Image</DialogTitle>
+          <DialogDescription className="text-slate-600 font-medium uppercase tracking-wider text-xs mt-2">
+            Upload a new image to the gallery. 
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="grid gap-6 py-4">
-          <div className="grid grid-cols-4 items-start gap-x-4 gap-y-2">
-            <Label htmlFor="title" className="text-right pt-2 col-span-1">
-              Title *
-            </Label>
-            <div className="col-span-3">
+        <form onSubmit={handleSubmit} className="gap-0 py-0 flex flex-col">
+          <div className="p-6 space-y-6">
+            <div>
+              <Label htmlFor="title" className="text-xs font-black uppercase tracking-widest text-slate-900 mb-2 block">
+                Title *
+              </Label>
               <Input 
                 id="title" 
                 name="title" 
                 required 
-                placeholder="Enter image title"
+                placeholder="E.G. EXCAVATOR ON SITE"
+                className="w-full h-12 rounded-none border-2 border-slate-300 focus-visible:ring-0 focus-visible:border-primary font-medium text-slate-900 uppercase"
               />
-              {fieldErrors?.title && <p className="text-xs text-red-500 mt-1">{fieldErrors.title.join(', ')}</p>}
+              {fieldErrors?.title && <p className="text-xs text-red-600 font-bold uppercase mt-2 tracking-wider">{fieldErrors.title.join(', ')}</p>}
             </div>
-          </div>
-          
-          <div className="grid grid-cols-4 items-start gap-x-4 gap-y-2">
-            <Label htmlFor="description" className="text-right pt-2 col-span-1">
-              Description
-            </Label>
-            <div className="col-span-3">
+            
+            <div>
+              <Label htmlFor="description" className="text-xs font-black uppercase tracking-widest text-slate-900 mb-2 block">
+                Description
+              </Label>
               <Textarea 
                 id="description" 
                 name="description" 
-                placeholder="Enter image description (optional)"
+                placeholder="Enter image description..."
+                className="w-full min-h-[100px] rounded-none border-2 border-slate-300 focus-visible:ring-0 focus-visible:border-primary font-medium text-slate-900 resize-none"
               />
-              {fieldErrors?.description && <p className="text-xs text-red-500 mt-1">{fieldErrors.description.join(', ')}</p>}
+              {fieldErrors?.description && <p className="text-xs text-red-600 font-bold uppercase mt-2 tracking-wider">{fieldErrors.description.join(', ')}</p>}
             </div>
-          </div>
-          
-          <div className="grid grid-cols-4 items-start gap-x-4 gap-y-2">
-            <Label className="text-right pt-2 col-span-1">Image *</Label>
-            <div className="col-span-3">
-              <FileUpload 
-                onUploadSuccess={(url) => setUploadedImageUrl(url)} 
-                initialImageUrl={uploadedImageUrl}
-                label="Gallery Image"
-              />
-              {!uploadedImageUrl && <p className="text-xs text-amber-500 mt-1">Please upload an image.</p>}
-              {fieldErrors?.imageUrl && <p className="text-xs text-red-500 mt-1">{fieldErrors.imageUrl.join(', ')}</p>}
+            
+            <div className="pt-4 border-t-2 border-slate-100">
+              <Label className="text-xs font-black uppercase tracking-widest text-slate-900 mb-4 block">Image *</Label>
+              <div className="border-2 border-slate-300 p-2 border-dashed bg-slate-50">
+                <FileUpload 
+                  onUploadSuccess={(url) => setUploadedImageUrl(url)} 
+                  initialImageUrl={uploadedImageUrl}
+                  label=""
+                />
+              </div>
+              {!uploadedImageUrl && <p className="text-xs text-amber-600 font-bold uppercase mt-2 tracking-wider">Please upload an image.</p>}
+              {fieldErrors?.imageUrl && <p className="text-xs text-red-600 font-bold uppercase mt-2 tracking-wider">{fieldErrors.imageUrl.join(', ')}</p>}
             </div>
-          </div>
 
-          {generalError && <p className="text-sm text-red-600 col-span-4 text-center bg-red-100 p-2 rounded-md">{generalError}</p>}
+            {generalError && <p className="text-xs font-bold uppercase tracking-wider text-white bg-red-600 p-3">{generalError}</p>}
+          </div>
           
-          <DialogFooter className="mt-2">
+          <DialogFooter className="p-6 border-t-2 border-slate-900 bg-slate-50 flex sm:justify-between gap-4 sm:gap-0">
             <DialogClose asChild>
-              <Button type="button" variant="outline" onClick={handleDialogClose}>Cancel</Button>
+              <Button type="button" variant="outline" onClick={handleDialogClose} className="h-14 rounded-none border-2 border-slate-900 bg-white hover:bg-slate-200 text-slate-900 font-black uppercase tracking-widest text-sm sm:w-1/3">Cancel</Button>
             </DialogClose>
             <Button 
               type="submit" 
               disabled={isPending || !uploadedImageUrl}
+              className="h-14 rounded-none bg-slate-900 hover:bg-primary text-white font-black uppercase tracking-widest text-sm sm:w-2/3"
             >
-              {isPending ? "Saving..." : "Save Image"}
+              {isPending ? "PROCESSING..." : "SAVE IMAGE"}
             </Button>
           </DialogFooter>
         </form>

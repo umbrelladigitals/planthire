@@ -40,23 +40,27 @@ export function PanelHeader({ user }: PanelHeaderProps) {
   ];
 
   return (
-    <header className="sticky top-0 z-30 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-30 w-full bg-slate-900 border-b border-slate-800 text-white">
       <div className="container flex h-16 items-center">
-        <div className="mr-4 flex">
-          <Link href="/panel" className="mr-6 flex items-center space-x-2">
+        <div className="mr-8 flex">
+          <Link href="/panel" className="flex items-center space-x-3 text-white hover:text-primary transition-colors">
             <Package className="h-6 w-6" />
-            <span className="hidden font-bold sm:inline-block">
-              PlantHire Admin
+            <span className="hidden font-black tracking-widest uppercase sm:inline-block">
+              PlantHire
             </span>
           </Link>
         </div>
         
-        <nav className="hidden md:flex flex-1 items-center space-x-1">
+        <nav className="hidden md:flex flex-1 items-center space-x-2">
           {navItems.map((item) => (
             <Button
               key={item.href}
-              variant={pathname === item.href ? "default" : "ghost"}
-              size="sm"
+              variant="ghost"
+              className={`rounded-none h-16 flex items-center px-4 transition-colors font-bold uppercase tracking-wider text-xs ${
+                pathname === item.href 
+                  ? "bg-slate-800 text-white border-b-2 border-primary" 
+                  : "text-slate-400 hover:text-white hover:bg-slate-800"
+              }`}
               asChild
             >
               <Link href={item.href} className="flex items-center">
@@ -72,44 +76,45 @@ export function PanelHeader({ user }: PanelHeaderProps) {
           
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-                <Avatar>
-                  <AvatarImage src={user.image || undefined} alt={user.name || "User"} />
-                  <AvatarFallback>{user.name?.charAt(0) || user.email?.charAt(0)}</AvatarFallback>
+              <Button variant="ghost" className="relative h-10 w-10 rounded-none border border-slate-700 bg-slate-800 hover:bg-slate-700 text-white">
+                <Avatar className="h-8 w-8 rounded-none">
+                  <AvatarImage src={user.image || undefined} alt={user.name || "User Avatar"} />
+                  <AvatarFallback className="rounded-none bg-primary text-white font-bold">{user.name?.charAt(0) || user.email?.charAt(0)}</AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56" align="end" forceMount>
-              <DropdownMenuLabel className="font-normal">
+            <DropdownMenuContent className="w-64 rounded-none border-slate-200 bg-white" align="end" forceMount>
+              <DropdownMenuLabel className="font-normal p-4 bg-slate-50 border-b border-slate-100">
                 <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">{user.name}</p>
-                  <p className="text-xs leading-none text-muted-foreground">
+                  <p className="text-sm font-extrabold uppercase tracking-wide text-slate-900">{user.name}</p>
+                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
                     {user.email}
                   </p>
                 </div>
               </DropdownMenuLabel>
-              <DropdownMenuSeparator />
               
               {/* Mobile navigation for small screens */}
-              <div className="md:hidden">
+              <div className="md:hidden p-2">
                 {navItems.map((item) => (
-                  <DropdownMenuItem key={item.href} asChild>
+                  <DropdownMenuItem key={item.href} asChild className="rounded-none font-bold uppercase text-xs tracking-wider text-slate-600 focus:bg-slate-100 focus:text-slate-900 cursor-pointer py-3">
                     <Link href={item.href} className="flex items-center">
                       {item.icon}
                       {item.label}
                     </Link>
                   </DropdownMenuItem>
                 ))}
-                <DropdownMenuSeparator />
+                <DropdownMenuSeparator className="bg-slate-100" />
               </div>
               
-              <DropdownMenuItem 
-                className="text-red-600 cursor-pointer"
-                onClick={() => signOut({ callbackUrl: '/' })}
-              >
-                <LogOut className="h-4 w-4 mr-2" />
-                <span>Log out</span>
-              </DropdownMenuItem>
+              <div className="p-2">
+                <DropdownMenuItem 
+                  className="text-white bg-red-600 focus:bg-red-700 focus:text-white rounded-none cursor-pointer py-3 font-bold uppercase text-xs tracking-wider justify-center transition-colors"
+                  onClick={() => signOut({ callbackUrl: '/' })}
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  <span>Session Logout</span>
+                </DropdownMenuItem>
+              </div>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

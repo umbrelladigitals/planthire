@@ -1,4 +1,4 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+
 import { Shovel, Truck, Building, Wrench, Clock, ShieldCheck } from "lucide-react";
 
 const services = [
@@ -36,29 +36,39 @@ const services = [
 
 export function Services() {
   return (
-    <section id="services" className="py-16 md:py-24 bg-zinc-50">
+    <section id="services" className="py-24 bg-slate-50 border-t border-slate-200">
       <div className="container">
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4">Our Services</h2>
-          <p className="text-lg text-muted-foreground">
-            We provide a comprehensive range of equipment hire and related services to support your projects.
-          </p>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {services.map((service, index) => (
-            <Card key={index} className="border-2 border-primary/5 hover:border-primary/20 transition-colors">
-              <CardHeader className="pb-2">
-                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-3">
-                  <service.icon className="h-6 w-6 text-primary" />
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-12 lg:gap-8">
+          
+          <div className="lg:col-span-1 lg:sticky lg:top-32 self-start">
+            <span className="text-primary font-bold tracking-wider uppercase text-sm mb-4 block">Our Expertise</span>
+            <h2 className="text-4xl font-extrabold text-slate-900 tracking-tight mb-4">
+              Our Services
+            </h2>
+            <p className="text-slate-600 mb-8 text-lg">
+              We provide a comprehensive range of equipment hire and related services to support your projects effectively and safely.
+            </p>
+            <div className="w-16 h-1 bg-primary"></div>
+          </div>
+          
+          <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-10">
+            {services.map((service, index) => (
+              <div key={index} className="group flex items-start gap-6 bg-white p-8 border border-slate-100 hover:border-slate-300 hover:shadow-xl transition-all duration-300">
+                <div className="flex-shrink-0 w-14 h-14 bg-slate-900 text-white rounded-none flex items-center justify-center transform group-hover:bg-primary group-hover:rotate-3 transition-all duration-300 shadow-md">
+                  <service.icon className="h-6 w-6" />
                 </div>
-                <CardTitle>{service.title}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription className="text-base">{service.description}</CardDescription>
-              </CardContent>
-            </Card>
-          ))}
+                <div>
+                  <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-primary transition-colors">
+                    {service.title}
+                  </h3>
+                  <p className="text-slate-600 leading-relaxed text-sm">
+                    {service.description}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+
         </div>
       </div>
     </section>

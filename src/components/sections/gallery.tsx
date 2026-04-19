@@ -56,6 +56,10 @@ export function Gallery() {
   //   }));
   // };
 
+  if (!isLoading && !error && galleryItems.length === 0) {
+    return null;
+  }
+
   return (
     <section id="gallery" className="py-16 md:py-24 bg-slate-50">
       <div className="container">
@@ -70,31 +74,29 @@ export function Gallery() {
         </div>
 
         {isLoading && (
-          <p className="text-center text-muted-foreground">Loading gallery...</p>
+          <div className="flex justify-center items-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-900"></div>
+          </div>
         )}
+        
         {error && (
           <p className="text-center text-red-500">
             Error loading gallery: {error}
           </p>
         )}
-        {!isLoading && !error && galleryItems.length === 0 && (
-          <p className="text-center text-muted-foreground">
-            No gallery items to display at the moment.
-          </p>
-        )}
+        
         {!isLoading && !error && galleryItems.length > 0 && (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 md:gap-6">
             {galleryItems.map((item, index) => (
               <Dialog key={item.id} onOpenChange={(isOpen) => !isOpen && setSelectedImage(null)}>
                 <DialogTrigger asChild onClick={() => setSelectedImage(item)}>
                   <div 
-                    className="aspect-square overflow-hidden rounded-lg cursor-pointer group bg-gray-100 relative"
+                    className="aspect-square overflow-hidden rounded-xl cursor-pointer group bg-muted relative shadow-sm hover:shadow-md transition-shadow border border-border"
                     style={{ 
                       display: 'block',
                       position: 'relative',
                       width: '100%',
-                      height: '0',
-                      paddingBottom: '100%' // 1:1 aspect ratio
+                      height: '100%' // Fixed the 0 height issue by letting aspect-square handle it
                     }}
                   >
                     <Image
@@ -110,23 +112,14 @@ export function Gallery() {
                         height: '100%',
                         zIndex: 1
                       }}
+                      className="transition-transform duration-500 group-hover:scale-110"
                       priority={index < 4}
                       onError={() => {
                         console.error(`Failed to load image: ${item.imageUrl}`);
                       }}
                     />
                     <div 
-                      className="absolute inset-0 bg-black transition-opacity duration-300 z-10"
-                      style={{ 
-                        opacity: 0,
-                        transition: 'opacity 0.3s ease',
-                      }}
-                      onMouseOver={(e) => {
-                        (e.target as HTMLElement).style.opacity = '0.2';
-                      }}
-                      onMouseOut={(e) => {
-                        (e.target as HTMLElement).style.opacity = '0';
-                      }}
+                      className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 z-10"
                     />
                   </div>
                 </DialogTrigger>

@@ -6,6 +6,7 @@ import { revalidatePath } from 'next/cache';
 import { uploadFileAction } from './file-actions';
 import { AuditLogAction } from "@/lib/audit-types"; 
 import { createAuditLog } from "@/lib/audit"; 
+import { requireAdmin } from "@/lib/auth-guard";
 
 // const prisma = new PrismaClient();
 
@@ -17,6 +18,9 @@ const GallerySchema = z.object({
 });
 
 export async function createGalleryImageAction(formData: FormData) {
+  const authError = await requireAdmin();
+  if (authError) return authError;
+
   // If there's a file upload, handle it first
   let imageUrl = '';
   const file = formData.get('file') as File | null;
@@ -124,6 +128,9 @@ export async function getGalleryImagesAction() {
 }
 
 export async function deleteGalleryImageAction(id: string) {
+  const authError = await requireAdmin();
+  if (authError) return authError;
+
   try {
     const deletedImage = await db.gallery.delete({
       where: {

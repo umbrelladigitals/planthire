@@ -5,24 +5,47 @@ import { db } from "@/lib/db";
 import { sendEmail, createContactNotificationEmail } from "@/lib/email";
 import { AuditLogAction } from "@/lib/audit-types";
 import { createAuditLog } from "@/lib/audit";
+import { requireAdmin } from "@/lib/auth-guard";
 
 /**
  * Saves data submitted from the contact form and sends an email notification
  */
+const MAX_LENGTHS = {
+  fullName: 100,
+  email: 255,
+  phone: 30,
+  equipment: 200,
+  message: 2000,
+};
+
 export async function submitContactFormAction(formData: FormData) {
   try {
-    const fullName = formData.get('fullName') as string;
-    const email = formData.get('email') as string;
-    const phone = formData.get('phone') as string;
-    const equipment = formData.get('equipment') as string;
-    const message = formData.get('message') as string;
+    const fullName = (formData.get('fullName') as string)?.trim();
+    const email = (formData.get('email') as string)?.trim();
+    const phone = (formData.get('phone') as string)?.trim();
+    const equipment = (formData.get('equipment') as string)?.trim();
+    const message = (formData.get('message') as string)?.trim();
 
-    // Validate form data
+    // Validate required fields
     if (!fullName || !email || !message) {
-      return {
-        success: false,
-        error: "Please fill in all required fields."
-      };
+      return { success: false, error: "Please fill in all required fields." };
+    }
+
+    // Validate max lengths to prevent spam / DB abuse
+    if (fullName.length > MAX_LENGTHS.fullName)
+      return { success: false, error: `Name must be ${MAX_LENGTHS.fullName} characters or fewer.` };
+    if (email.length > MAX_LENGTHS.email)
+      return { success: false, error: "Invalid email address." };
+    if (phone && phone.length > MAX_LENGTHS.phone)
+      return { success: false, error: `Phone must be ${MAX_LENGTHS.phone} characters or fewer.` };
+    if (equipment && equipment.length > MAX_LENGTHS.equipment)
+      return { success: false, error: `Equipment field is too long.` };
+    if (message.length > MAX_LENGTHS.message)
+      return { success: false, error: `Message must be ${MAX_LENGTHS.message} characters or fewer.` };
+
+    // Basic email format check
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return { success: false, error: "Please enter a valid email address." };
     }
 
     // Save to database
@@ -87,6 +110,9 @@ export async function submitContactFormAction(formData: FormData) {
  * Marks a contact request as read
  */
 export async function markContactAsReadAction(id: string) {
+  const authError = await requireAdmin();
+  if (authError) return authError;
+
   try {
     const contact = await db.contactSubmission.update({
       where: { id },
@@ -117,6 +143,9 @@ export async function markContactAsReadAction(id: string) {
  * Deletes a contact request
  */
 export async function deleteContactAction(id: string) {
+  const authError = await requireAdmin();
+  if (authError) return authError;
+
   try {
     await db.contactSubmission.delete({
       where: { id }
@@ -137,6 +166,9 @@ export async function deleteContactAction(id: string) {
  * Gets contact request details
  */
 export async function getContactDetailsAction(id: string) {
+  const authError = await requireAdmin();
+  if (authError) return authError;
+
   try {
     const contact = await db.contactSubmission.findUnique({
       where: { id }

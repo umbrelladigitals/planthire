@@ -7,11 +7,19 @@ const equipmentDetailsSelect = {
   name: true,
   imageUrl: true,
   description: true,
-  dailyRate: true,
-  weeklyRate: true,
-  monthlyRate: true,
   available: true,
   specifications: true, // Assuming specifications are needed for details
+  EquipmentCategory: {
+    select: {
+      Category: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+        }
+      }
+    }
+  }
 };
 
 // Interface for the data structure expected by the frontend
@@ -20,14 +28,9 @@ export interface Product {
   name: string;
   imageUrl: string | null;
   description: string | null;
-  dailyRate: string | null;
-  weeklyRate: string | null;
-  monthlyRate: string | null;
   available: boolean;
+  categories?: { id: string; name: string; slug: string }[];
 }
-
-// EquipmentDetails tipini ilgili API rotasından import ediyoruz
-import { PrismaEquipmentDetails } from '../equipment/[id]/route';
 
 export async function GET() {
   try {
@@ -40,18 +43,15 @@ export async function GET() {
     });
 
     // Format null values and Decimal rates as strings before sending to the frontend
-    const formattedProducts: Product[] = equipments.map((equipment: PrismaEquipmentDetails) => ({
+    const formattedProducts: Product[] = equipments.map((equipment) => ({
       id: equipment.id,
       name: equipment.name,
       imageUrl: equipment.imageUrl || null, // Explicitly handle null
       description: equipment.description || null, // Explicitly handle null
-      // dailyRate, weeklyRate, monthlyRate Decimal tipinde gelebilir, string'e çeviriyoruz
-      dailyRate: equipment.dailyRate !== null ? equipment.dailyRate.toString() : null, 
-      weeklyRate: equipment.weeklyRate !== null ? equipment.weeklyRate.toString() : null, 
-      monthlyRate: equipment.monthlyRate !== null ? equipment.monthlyRate.toString() : null, 
       available: equipment.available, // available boolean gelmeli
-      // specifications alanı API yanıtına dahil edilmeli mi? Frontend ihtiyacına göre buraya ekleyebilirsiniz.
-      // specifications: equipment.specifications || null,
+      categories: equipment.EquipmentCategory 
+        ? equipment.EquipmentCategory.map((ec) => ec.Category)
+        : [],
     }));
 
     return NextResponse.json(formattedProducts);

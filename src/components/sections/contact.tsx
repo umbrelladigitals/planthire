@@ -15,7 +15,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Phone, Mail, MapPin, Clock } from "lucide-react";
 import { submitContactFormAction } from "@/actions/contact-actions";
 
@@ -95,165 +94,200 @@ export function Contact() {
   }
 
   return (
-    <section id="contact" className="py-16 md:py-24">
+    <section id="contact" className="py-20 md:py-32 bg-white border-t border-slate-200">
       <div className="container">
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4">Contact Us</h2>
-          <p className="text-lg text-muted-foreground">
+        <div className="text-center max-w-3xl mx-auto mb-16 md:mb-24">
+          <h2 className="text-3xl font-black uppercase tracking-tighter text-slate-900 sm:text-5xl mb-6">
+            Contact <span className="text-primary">Us</span>
+          </h2>
+          <p className="text-lg font-medium text-slate-600">
             Get in touch with our team to discuss your equipment hire needs or request a quote.
           </p>
         </div>
         
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-          <div>
-            <Card>
-              <CardHeader>
-                <CardTitle>Enquiry Form</CardTitle>
-                <CardDescription>Fill out the form below and we&apos;ll get back to you as soon as possible.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {formStatus.type && (
-                  <div className={`mb-4 p-3 rounded-md ${formStatus.type === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}>
-                    {formStatus.message}
-                  </div>
-                )}
-                
-                <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="fullName"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Full Name</FormLabel>
-                            <FormControl>
-                              <Input placeholder="Enter your full name" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="email"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Email Address</FormLabel>
-                            <FormControl>
-                              <Input placeholder="Enter your email" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                    
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8">
+          {/* Form Side */}
+          <div className="lg:col-span-7">
+            <div className="bg-white border border-slate-200 p-8 md:p-12">
+              <div className="mb-8 border-b border-slate-100 pb-6">
+                <h3 className="font-black uppercase tracking-widest text-xl text-slate-900 mb-2">Enquiry Form</h3>
+                <p className="text-slate-500 font-medium text-sm">Fill out the form below and we&apos;ll get back to you as soon as possible.</p>
+              </div>
+              
+              {formStatus.type && (
+                <div className={`mb-8 p-4 border ${formStatus.type === 'success' ? 'bg-green-50 border-green-200 text-green-800' : 'bg-red-50 border-red-200 text-red-800'}`}>
+                  <p className="font-bold text-sm tracking-wide">{formStatus.message}</p>
+                </div>
+              )}
+              
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <FormField
                       control={form.control}
-                      name="phone"
+                      name="fullName"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Phone Number</FormLabel>
+                          <FormLabel className="font-bold uppercase tracking-widest text-[10px] text-slate-500">Full Name</FormLabel>
                           <FormControl>
-                            <Input placeholder="Enter your phone number" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="equipment"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Required Equipment</FormLabel>
-                          <FormControl>
-                            <Input placeholder="What equipment do you need?" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="message"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Message</FormLabel>
-                          <FormControl>
-                            <Textarea 
-                              placeholder="Please provide details about your project" 
-                              rows={4} 
+                            <Input 
+                              placeholder="Enter your full name" 
+                              className="h-12 rounded-none border-slate-200 focus-visible:border-slate-900 focus-visible:ring-0 bg-slate-50 transition-colors" 
                               {...field} 
                             />
                           </FormControl>
-                          <FormMessage />
+                          <FormMessage className="text-[10px] uppercase font-bold" />
                         </FormItem>
                       )}
                     />
-                    <Button 
-                      type="submit" 
-                      className="w-full mt-4" 
-                      disabled={isSubmitting}
-                    >
-                      {isSubmitting ? "Submitting..." : "Submit Enquiry"}
-                    </Button>
-                  </form>
-                </Form>
-              </CardContent>
-            </Card>
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="font-bold uppercase tracking-widest text-[10px] text-slate-500">Email Address</FormLabel>
+                          <FormControl>
+                            <Input 
+                              placeholder="Enter your email" 
+                              className="h-12 rounded-none border-slate-200 focus-visible:border-slate-900 focus-visible:ring-0 bg-slate-50 transition-colors" 
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage className="text-[10px] uppercase font-bold" />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  
+                  <FormField
+                    control={form.control}
+                    name="phone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="font-bold uppercase tracking-widest text-[10px] text-slate-500">Phone Number</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="Enter your phone number" 
+                            className="h-12 rounded-none border-slate-200 focus-visible:border-slate-900 focus-visible:ring-0 bg-slate-50 transition-colors" 
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage className="text-[10px] uppercase font-bold" />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="equipment"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="font-bold uppercase tracking-widest text-[10px] text-slate-500">Required Equipment</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="What equipment do you need?" 
+                            className="h-12 rounded-none border-slate-200 focus-visible:border-slate-900 focus-visible:ring-0 bg-slate-50 transition-colors" 
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage className="text-[10px] uppercase font-bold" />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="message"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="font-bold uppercase tracking-widest text-[10px] text-slate-500">Message</FormLabel>
+                        <FormControl>
+                          <Textarea 
+                            placeholder="Please provide details about your project" 
+                            rows={6} 
+                            className="rounded-none border-slate-200 focus-visible:border-slate-900 focus-visible:ring-0 bg-slate-50 transition-colors resize-none" 
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage className="text-[10px] uppercase font-bold" />
+                      </FormItem>
+                    )}
+                  />
+                  <Button 
+                    type="submit" 
+                    className="w-full h-14 mt-6 rounded-none bg-slate-900 hover:bg-primary text-white font-bold uppercase tracking-widest text-[11px] transition-colors" 
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? "Submitting..." : "Submit Enquiry"}
+                  </Button>
+                </form>
+              </Form>
+            </div>
           </div>
           
-          <div className="space-y-6">
-            <div>
-              <h3 className="text-xl font-semibold mb-4">Contact Information</h3>
-              <div className="space-y-4">
-                <div className="flex items-start gap-3">
-                  <Phone className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+          {/* Info Side */}
+          <div className="lg:col-span-5 lg:pl-6 space-y-8">
+            <div className="bg-slate-50 border border-slate-200 p-8">
+              <h3 className="font-black uppercase tracking-widest text-lg text-slate-900 mb-8 border-b border-slate-200 pb-4">Contact Information</h3>
+              
+              <div className="space-y-8">
+                <div className="flex items-start gap-5">
+                  <div className="bg-white border border-slate-200 text-slate-900 p-3 shrink-0 group-hover:bg-slate-900 group-hover:text-white transition-colors">
+                    <Phone className="h-5 w-5 text-primary" />
+                  </div>
                   <div>
-                    <p className="font-medium">Phone</p>
-                    <p className="text-muted-foreground">+44 7312 110885</p>
+                    <p className="font-black uppercase tracking-widest text-[10px] text-slate-400 mb-1">Phone</p>
+                    <p className="font-bold text-slate-900 text-sm tracking-wide">+44 7312 110885</p>
                   </div>
                 </div>
-                <div className="flex items-start gap-3">
-                  <Mail className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                
+                <div className="flex items-start gap-5">
+                  <div className="bg-white border border-slate-200 text-slate-900 p-3 shrink-0 group-hover:bg-slate-900 group-hover:text-white transition-colors">
+                    <Mail className="h-5 w-5 text-primary" />
+                  </div>
                   <div>
-                    <p className="font-medium">Email</p>
-                    <p className="text-muted-foreground">Aberdeenshireplanthire@gmail.com</p>
+                    <p className="font-black uppercase tracking-widest text-[10px] text-slate-400 mb-1">Email</p>
+                    <p className="font-bold text-slate-900 text-sm tracking-wide break-all">Aberdeenshireplanthire@gmail.com</p>
                   </div>
                 </div>
-                <div className="flex items-start gap-3">
-                  <MapPin className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                
+                <div className="flex items-start gap-5">
+                  <div className="bg-white border border-slate-200 text-slate-900 p-3 shrink-0 group-hover:bg-slate-900 group-hover:text-white transition-colors">
+                    <MapPin className="h-5 w-5 text-primary" />
+                  </div>
                   <div>
-                    <p className="font-medium">Address</p>
-                    <p className="text-muted-foreground">
+                    <p className="font-black uppercase tracking-widest text-[10px] text-slate-400 mb-1">Address</p>
+                    <p className="font-bold text-slate-900 text-sm tracking-wide leading-relaxed">
                       High street new pitsligo<br />
                       Fraserburgh<br />
                       United Kingdom
                     </p>
                   </div>
                 </div>
-                <div className="flex items-start gap-3">
-                  <Clock className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                
+                <div className="flex items-start gap-5">
+                  <div className="bg-white border border-slate-200 text-slate-900 p-3 shrink-0 group-hover:bg-slate-900 group-hover:text-white transition-colors">
+                    <Clock className="h-5 w-5 text-primary" />
+                  </div>
                   <div>
-                    <p className="font-medium">Opening Hours</p>
-                    <p className="text-muted-foreground">
+                    <p className="font-black uppercase tracking-widest text-[10px] text-slate-400 mb-1">Opening Hours</p>
+                    <p className="font-bold text-slate-900 text-sm tracking-wide leading-relaxed">
                       Monday - Friday: 8:00 AM - 5:00 PM<br />
                       Saturday: 9:00 AM - 1:00 PM<br />
-                      Sunday: Closed
+                      <span className="text-slate-500">Sunday: Closed</span>
                     </p>
                   </div>
                 </div>
               </div>
             </div>
             
-            <div>
-              <h3 className="text-xl font-semibold mb-4">Service Area</h3>
-              <p className="text-muted-foreground">
-                We provide equipment hire services throughout Abeerbeednshire and surrounding areas 
+            <div className="bg-slate-900 text-white p-8">
+              <h3 className="font-black uppercase tracking-widest text-lg text-white mb-4 flex items-center gap-3">
+                <span className="w-8 h-[2px] bg-primary block"></span>
+                Service Area
+              </h3>
+              <p className="text-slate-300 text-sm leading-relaxed font-medium">
+                We provide equipment hire services throughout Aberdeenshire and surrounding areas 
                 including Aberdeen, Peterhead, Fraserburgh, Huntly, Inverurie, and other locations 
                 within a 50-mile radius of our main depot.
               </p>

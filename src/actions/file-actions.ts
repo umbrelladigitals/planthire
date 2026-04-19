@@ -3,13 +3,15 @@
 import fs from 'fs';
 import path from 'path';
 import { promisify } from 'util';
+import { requireAdmin } from '@/lib/auth-guard';
 
 // promisify writeFile and mkdir to use with async/await
 const writeFileAsync = promisify(fs.writeFile);
 const mkdirAsync = promisify(fs.mkdir);
 
-// Define allowed file types and max size (e.g., 5MB)
+// Define allowed file types and extensions — both must match
 const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
 
 // Ensure the upload directory exists
@@ -19,10 +21,7 @@ async function ensureUploadDirExists() {
   try {
     await mkdirAsync(UPLOAD_DIR, { recursive: true });
   } catch (error: unknown) {
-    // Assert the error type to access specific properties
     const nodeError = error as NodeJS.ErrnoException;
-
-    // Ignore EEXIST error (directory already exists)
     if (nodeError.code !== 'EEXIST') {
       console.error('Failed to create upload directory:', error);
       throw new Error('Could not create upload directory on the server.');
@@ -31,6 +30,9 @@ async function ensureUploadDirExists() {
 }
 
 export async function uploadFileAction(formData: FormData): Promise<{ success: boolean; error?: string; filePath?: string; fileName?: string; publicUrl?: string }> {
+  const authError = await requireAdmin();
+  if (authError) return authError;
+
   try {
     await ensureUploadDirExists();
 
@@ -40,9 +42,15 @@ export async function uploadFileAction(formData: FormData): Promise<{ success: b
       return { success: false, error: 'No file provided.' };
     }
 
-    // Validate file type
+    // Validate MIME type (client-provided, secondary check)
     if (!ALLOWED_MIME_TYPES.includes(file.type)) {
       return { success: false, error: 'Invalid file type. Only JPEG, PNG, GIF, WEBP are allowed.' };
+    }
+
+    // Validate file extension (prevents disguised uploads)
+    const fileExtension = path.extname(file.name).toLowerCase();
+    if (!ALLOWED_EXTENSIONS.includes(fileExtension)) {
+      return { success: false, error: 'Invalid file extension. Only .jpg, .jpeg, .png, .gif, .webp are allowed.' };
     }
 
     // Validate file size
@@ -53,39 +61,37 @@ export async function uploadFileAction(formData: FormData): Promise<{ success: b
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Create a unique filename (e.g., timestamp + original name)
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    const fileExtension = path.extname(file.name);
-    const uniqueFilename = file.name.replace(fileExtension, '').replace(/[^a-zA-Z0-9]/g, '-') + '-' + uniqueSuffix + fileExtension;
-    
-    const filePath = path.join(UPLOAD_DIR, uniqueFilename);
+    // Validate magic bytes — first 4 bytes must match a known image format
+    const magic = buffer.subarray(0, 4);
+    const isJpeg = magic[0] === 0xff && magic[1] === 0xd8;
+    const isPng = magic[0] === 0x89 && magic[1] === 0x50 && magic[2] === 0x4e && magic[3] === 0x47;
+    const isGif = magic[0] === 0x47 && magic[1] === 0x49 && magic[2] === 0x46;
+    const isWebp = buffer.subarray(0, 12).toString('ascii', 8, 12) === 'WEBP';
+    if (!isJpeg && !isPng && !isGif && !isWebp) {
+      return { success: false, error: 'File content does not match a supported image format.' };
+    }
 
+    // Generate a safe, collision-resistant filename using only the sanitized extension
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+    const uniqueFilename = `upload-${uniqueSuffix}${fileExtension}`;
+
+    const filePath = path.join(UPLOAD_DIR, uniqueFilename);
     await writeFileAsync(filePath, buffer);
 
     const publicUrl = `/uploads/images/${uniqueFilename}`;
 
-    console.log(`File uploaded successfully to: ${filePath}`);
-    console.log(`Public URL: ${publicUrl}`);
-
     return {
       success: true,
-      filePath: filePath, // Server-side path
+      filePath,
       fileName: uniqueFilename,
-      publicUrl: publicUrl,  // URL to access the file from the client
+      publicUrl,
     };
 
   } catch (e: unknown) {
     console.error('Upload Error:', e);
-    // Check for specific errors or provide a generic message
-    if (e instanceof Error) {
-        if (e.message.includes('Could not create upload directory')) {
-            return { success: false, error: e.message };
-        }
-        // Return generic error message if it's a standard Error but not a specific case
-        return { success: false, error: 'An error occurred during file upload: ' + e.message };
-    } else {
-        // Handle cases where the caught value is not an Error instance
-        return { success: false, error: 'An unknown error occurred during file upload.' };
+    if (e instanceof Error && e.message.includes('Could not create upload directory')) {
+      return { success: false, error: e.message };
     }
+    return { success: false, error: 'An error occurred during file upload.' };
   }
-} 
+}

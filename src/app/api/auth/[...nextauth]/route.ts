@@ -1,5 +1,3 @@
-import { handlers } from "@/lib/auth-options";
+import { handlers } from "@/auth";
 
-// console.log("authOptions in [...nextauth]/route.ts: ", authOptions)
-
-export const { GET, POST } = handlers; 
+export const { GET, POST } = handlers;

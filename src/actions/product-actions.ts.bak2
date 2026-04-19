@@ -1,12 +1,76 @@
 'use server';
 
+// import { PrismaClient } from '@prisma/client'; // Bu satır kaldırılacak
 import { revalidatePath } from 'next/cache';
-import { db } from "@/lib/db"; 
+import { db } from "@/lib/db"; // Merkezi db instance'ını kullanıyoruz
 import { AuditLogAction } from "@/lib/audit-types";
 import { createAuditLog } from "@/lib/audit";
-import { Prisma } from '@prisma/client'; 
-import { requireAdmin } from "@/lib/auth-guard";
+import { Prisma } from '@prisma/client'; // Sadece Prisma namespace'ini import et
 
+// const prisma = new PrismaClient(); // Bu satır da kaldırılacak
+
+// Zod schema for product input validation
+// createProductAction fonksiyonu kaldırıldığı için bu şema da gereksiz kalabilir,
+// ancak gelecekteki form işlemleri için bırakılabilir veya createEquipmentAction içine taşınabilir.
+// const ProductSchema = z.object({
+//   name: z.string().min(3, { message: 'Product name must be at least 3 characters long.' }),
+//   description: z.string().optional(),
+//   imageUrl: z.string().optional().or(z.literal('')),
+//   // Add other fields as necessary, e.g., specifications, etc.
+// });
+
+// Bu fonksiyon bir önceki adımda kaldırılmıştı, tekrar eklenmiş gibi görünüyor.
+// Eğer ClientProductForm bu fonksiyonu kullanmıyorsa (ki createEquipmentAction'ı kullanıyor olmalı)
+// bu fonksiyonun tamamı silinebilir.
+// Şimdilik yorum satırı yapıyorum, teyit sonrası silebiliriz.
+/*
+export async function createProductAction(formData: FormData) {
+  const rawFormData = {
+    name: formData.get('name'),
+    description: formData.get('description'),
+    imageUrl: formData.get('imageUrl'),
+  };
+
+  const validationResult = ProductSchema.safeParse(rawFormData);
+
+  if (!validationResult.success) {
+    console.error("Validation Error:", validationResult.error.flatten().fieldErrors);
+    return {
+      error: "Validation failed. Please check the form fields.",
+      fieldErrors: validationResult.error.flatten().fieldErrors,
+    };
+  }
+
+  const { name, description, imageUrl } = validationResult.data;
+
+  try {
+    const newProduct = await db.equipment.create({ // prisma.equipment yerine db.equipment kullanıldı
+      data: {
+        name,
+        description: description || null, 
+        imageUrl: imageUrl || null,      
+      },
+    });
+    
+    revalidatePath('/panel');
+    revalidatePath('/');
+
+    return { 
+      success: true,
+      message: 'Product created successfully!',
+      product: newProduct 
+    };
+
+  } catch (error) {
+    console.error("Error creating product:", error);
+    return {
+      error: 'Failed to create product. Please try again.',
+    };
+  }
+}
+*/
+
+// Create action now accepts simpler types and handles conversion to Prisma types
 export async function createEquipmentAction(data: {
   name: string;
   description?: string | null;
@@ -14,9 +78,6 @@ export async function createEquipmentAction(data: {
   available?: boolean;
   categoryId?: string | null;
 }) {
-  const authError = await requireAdmin();
-  if (authError) return authError;
-
   try {
     const newEquipment = await db.equipment.create({
       data: {
@@ -27,39 +88,32 @@ export async function createEquipmentAction(data: {
       },
     });
 
-    if (data.categoryId) {
-      await db.equipmentCategory.create({
-        data: {
-          id: crypto.randomUUID(),
-          equipmentId: newEquipment.id,
-          categoryId: data.categoryId,
-        },
-      });
-    }
-
     await createAuditLog({
       action: AuditLogAction.PRODUCT_CREATED,
       details: { 
         productId: newEquipment.id,
         productName: newEquipment.name 
       }
+      // userId: ... 
     });
 
     revalidatePath("/panel/products");
     revalidatePath("/panel"); 
 
     return { success: true, data: newEquipment };
-  } catch (error: unknown) { 
+  } catch (error: unknown) { // unknown kullanıp kontrol edelim
     console.error("Error creating equipment:", error);
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === 'P2002' && (error.meta?.target as string[])?.includes('name')) {
         return { success: false, error: `An equipment with the name "${data.name}" already exists.` };
       }
     }
+    // Genel hata mesajı
     return { success: false, error: error instanceof Error ? error.message : "Failed to create equipment." };
   }
 }
 
+// Update action now accepts simpler types and handles conversion to Prisma types
 export async function updateEquipmentAction(data: {
   id: string;
   name?: string;
@@ -68,15 +122,13 @@ export async function updateEquipmentAction(data: {
   available?: boolean;
   categoryId?: string | null;
 }) {
-  const authError = await requireAdmin();
-  if (authError) return authError;
-
   try {
     const updateData: {
         name?: string;
         description?: string | null;
         imageUrl?: string | null;
         available?: boolean;
+  categoryId?: string | null;
     } = {};
 
     if (data.name !== undefined) updateData.name = data.name;
@@ -96,21 +148,6 @@ export async function updateEquipmentAction(data: {
       where: { id: data.id },
       data: updateData,
     });
-    
-    if (data.categoryId !== undefined) {
-      await db.equipmentCategory.deleteMany({
-        where: { equipmentId: data.id }
-      });
-      if (data.categoryId) {
-        await db.equipmentCategory.create({
-          data: {
-            id: crypto.randomUUID(),
-            equipmentId: data.id,
-            categoryId: data.categoryId,
-          }
-        });
-      }
-    }
 
     await createAuditLog({
       action: AuditLogAction.PRODUCT_UPDATED,
@@ -125,22 +162,21 @@ export async function updateEquipmentAction(data: {
     revalidatePath("/panel");
 
     return { success: true, data: updatedEquipment };
-  } catch (error: unknown) { 
+  } catch (error: unknown) { // unknown kullanıp kontrol edelim
     console.error("Error updating equipment:", error);
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === 'P2002' && (error.meta?.target as string[])?.includes('name')) {
         return { success: false, error: `An equipment with the name "${data.name}" already exists.` };
       }
     }
+    // Genel hata mesajı
     return { success: false, error: error instanceof Error ? error.message : "Failed to update equipment." };
   }
 }
 
 export async function deleteEquipmentAction(id: string) {
-  const authError = await requireAdmin();
-  if (authError) return authError;
-
   try {
+    // İlk olarak ürünün mevcut olduğunu kontrol edelim
     const existingEquipment = await db.equipment.findUnique({
       where: { id }
     });
@@ -149,25 +185,36 @@ export async function deleteEquipmentAction(id: string) {
       return { success: false, error: "Equipment not found." };
     }
 
+    // Silme işlemi
     await db.equipment.delete({
       where: { id }
     });
 
+    // Audit log oluştur
     await createAuditLog({
       action: AuditLogAction.PRODUCT_DELETED,
       details: { 
         productId: existingEquipment.id,
         productName: existingEquipment.name
       }
+      // userId: ... 
     });
 
     revalidatePath("/panel/products");
+  //  revalidatePath("/panel"); // Panel sayfası ürün listesini doğrudan göstermiyorsa gerek yok
+
     return { success: true };
-  } catch (error: unknown) { 
+  } catch (error: unknown) { // unknown kullanıp kontrol edelim
     console.error("Error deleting equipment:", error);
+    // Özel hata kodları burada ele alınabilir (örn: ilgili başka kayıtlar varsa)
     return { success: false, error: error instanceof Error ? error.message : "Failed to delete equipment." };
   }
 }
+
+// TODO: Update ve Delete işlemleri için de benzer loglama ve action'lar eklenebilir.
+// export async function updateEquipmentAction(...) { ... }
+// export async function deleteEquipmentAction(...) { ... } 
+// export async function deleteEquipmentAction(...) { ... } 
 
 export async function getCategoriesAction() {
   try {

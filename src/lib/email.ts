@@ -7,6 +7,17 @@ interface EmailOptions {
   html?: string;
 }
 
+/** Escape user-supplied strings before interpolating into HTML email bodies */
+function escapeHtml(str: string | null | undefined): string {
+  if (!str) return '';
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;');
+}
+
 export async function sendEmail({ to, subject, text, html }: EmailOptions) {
   try {
     // Check .env variables
@@ -56,6 +67,7 @@ export function createContactNotificationEmail(contact: {
   equipment?: string | null;
   message: string;
 }) {
+  // Plain-text version (not rendered as HTML, no escaping needed)
   const text = `
 New Contact Form Submission
 ---------------------------
@@ -68,6 +80,13 @@ Message:
 ${contact.message}
 `;
 
+  // HTML version — all user values must be escaped
+  const eName = escapeHtml(contact.fullName);
+  const eEmail = escapeHtml(contact.email);
+  const ePhone = escapeHtml(contact.phone);
+  const eEquipment = escapeHtml(contact.equipment);
+  const eMessage = escapeHtml(contact.message);
+
   const html = `
 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
   <h2 style="color: #333; border-bottom: 1px solid #eee; padding-bottom: 10px;">New Contact Form Submission</h2>
@@ -75,29 +94,29 @@ ${contact.message}
   <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
     <tr>
       <td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold; width: 30%;">Full Name:</td>
-      <td style="padding: 8px; border-bottom: 1px solid #eee;">${contact.fullName}</td>
+      <td style="padding: 8px; border-bottom: 1px solid #eee;">${eName}</td>
     </tr>
     <tr>
       <td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold;">Email:</td>
-      <td style="padding: 8px; border-bottom: 1px solid #eee;">${contact.email}</td>
+      <td style="padding: 8px; border-bottom: 1px solid #eee;">${eEmail}</td>
     </tr>
-    ${contact.phone ? `
+    ${ePhone ? `
     <tr>
       <td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold;">Phone:</td>
-      <td style="padding: 8px; border-bottom: 1px solid #eee;">${contact.phone}</td>
+      <td style="padding: 8px; border-bottom: 1px solid #eee;">${ePhone}</td>
     </tr>
     ` : ''}
-    ${contact.equipment ? `
+    ${eEquipment ? `
     <tr>
       <td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold;">Equipment:</td>
-      <td style="padding: 8px; border-bottom: 1px solid #eee;">${contact.equipment}</td>
+      <td style="padding: 8px; border-bottom: 1px solid #eee;">${eEquipment}</td>
     </tr>
     ` : ''}
   </table>
   
   <div>
     <h3 style="color: #555; margin-bottom: 10px;">Message:</h3>
-    <div style="background-color: #f9f9f9; padding: 15px; border-radius: 4px; white-space: pre-wrap;">${contact.message}</div>
+    <div style="background-color: #f9f9f9; padding: 15px; border-radius: 4px; white-space: pre-wrap;">${eMessage}</div>
   </div>
   
   <div style="margin-top: 30px; font-size: 12px; color: #777; border-top: 1px solid #eee; padding-top: 10px;">

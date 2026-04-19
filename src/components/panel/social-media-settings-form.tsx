@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { getSocialMediaSettingsAction, updateSocialMediaSettingsAction } from "@/actions/settings-actions";
@@ -20,8 +19,8 @@ interface SocialLinkInputProps {
 
 function SocialLinkInput({ id, label, value, onChange, placeholder, icon }: SocialLinkInputProps) {
   return (
-    <div className="space-y-2">
-      <Label htmlFor={id} className="flex items-center">
+    <div className="space-y-3 pt-4 border-t-2 border-slate-100 first:border-0 first:pt-0">
+      <Label htmlFor={id} className="flex items-center text-xs font-black uppercase tracking-widest text-slate-900 mb-2">
         {icon}
         <span className="ml-2">{label}</span>
       </Label>
@@ -30,6 +29,7 @@ function SocialLinkInput({ id, label, value, onChange, placeholder, icon }: Soci
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
+        className="w-full h-12 rounded-none border-2 border-slate-300 focus-visible:ring-0 focus-visible:border-slate-900 font-medium text-slate-900"
       />
     </div>
   );
@@ -104,25 +104,25 @@ export function SocialMediaSettingsForm() {
   }
 
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle>Social Media Links</CardTitle>
-        <CardDescription>
+    <div className="bg-white border-2 border-slate-900 w-full">
+      <div className="p-6 border-b-2 border-slate-900 bg-slate-50">
+        <h3 className="text-2xl font-black uppercase tracking-widest text-slate-900">Social Media Links</h3>
+        <p className="text-slate-600 font-medium uppercase tracking-wider text-xs mt-2">
           Manage links to your social media profiles. These will be displayed in the site footer.
-        </CardDescription>
-      </CardHeader>
+        </p>
+      </div>
 
-      <form onSubmit={handleSubmit}>
-        <CardContent className="space-y-6">
+      <form onSubmit={handleSubmit} className="flex flex-col">
+        <div className="p-6 space-y-6">
           {isLoading ? (
-            <div className="h-[300px] flex items-center justify-center">
-              <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
-              <span>Loading Settings...</span>
+            <div className="h-[300px] flex items-center justify-center font-bold uppercase tracking-widest text-slate-500 text-xs">
+              <ReloadIcon className="mr-3 h-5 w-5 animate-spin text-slate-900" />
+              <span>LOADING SETTINGS...</span>
             </div>
           ) : (
             <>
               {status.type && (
-                <div className={`mb-4 p-3 rounded-md ${status.type === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}>
+                <div className={`p-4 font-bold uppercase tracking-wider text-xs border-2 ${status.type === 'success' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-red-50 text-red-700 border-red-200'}`}>
                   {status.message}
                 </div>
               )}
@@ -160,15 +160,15 @@ export function SocialMediaSettingsForm() {
               />
             </>
           )}
-        </CardContent>
+        </div>
 
-        <CardFooter className="flex justify-end">
-          <Button type="submit" disabled={isLoading || isSaving}>
-            {isSaving && <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />}
-            {isSaving ? "Saving..." : "Save Changes"}
+        <div className="p-6 border-t-2 border-slate-900 bg-slate-50 flex justify-end">
+          <Button type="submit" disabled={isLoading || isSaving} className="h-12 px-8 rounded-none bg-slate-900 hover:bg-primary text-white font-black uppercase tracking-widest text-xs transition-colors">
+            {isSaving && <ReloadIcon className="mr-3 h-4 w-4 animate-spin" />}
+            {isSaving ? "SAVING..." : "SAVE CHANGES"}
           </Button>
-        </CardFooter>
+        </div>
       </form>
-    </Card>
+    </div>
   );
 } 

@@ -18,7 +18,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { createEquipmentAction, updateEquipmentAction } from '@/actions/product-actions';
+import { createEquipmentAction, updateEquipmentAction, getCategoriesAction } from '@/actions/product-actions';
 import { FileUpload } from '@/components/ui/file-upload';
 import { Switch } from "@/components/ui/switch";
 import { toast } from 'sonner';
@@ -29,10 +29,8 @@ interface ProductToEdit {
   name: string;
   description: string | null;
   imageUrl: string | null;
-  dailyRate: string | null;
-  weeklyRate: string | null;
-  monthlyRate: string | null;
   available: boolean;
+  categoryId?: string | null;
 }
 
 interface ProductFormDialogProps {
@@ -44,15 +42,20 @@ const equipmentSchema = z.object({
   name: z.string().min(3, { message: "Name must be at least 3 characters long." }),
   description: z.string().optional(),
   imageUrl: z.string().optional().or(z.literal('')),
-  dailyRate: z.string().optional(),
-  weeklyRate: z.string().optional(),
-  monthlyRate: z.string().optional(),
   available: z.boolean(),
+  categoryId: z.string().optional().or(z.literal('')),
 });
 
 type EquipmentFormData = z.infer<typeof equipmentSchema>;
 
 export function ProductFormDialog({ productToEdit, onFormSubmit }: ProductFormDialogProps) {
+  const [categories, setCategories] = useState<{id: string, name: string}[]>([]);
+
+  useEffect(() => {
+    getCategoriesAction().then(res => {
+      if (res.success && res.data) setCategories(res.data);
+    });
+  }, []);
   const [isOpen, setIsOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string>("");
@@ -70,10 +73,8 @@ export function ProductFormDialog({ productToEdit, onFormSubmit }: ProductFormDi
           name: productToEdit.name,
           description: productToEdit.description || "",
           imageUrl: productToEdit.imageUrl || "",
-          dailyRate: productToEdit.dailyRate || "",
-          weeklyRate: productToEdit.weeklyRate || "",
-          monthlyRate: productToEdit.monthlyRate || "",
           available: productToEdit.available,
+          categoryId: productToEdit.categoryId || "",
         });
         setUploadedImageUrl(productToEdit.imageUrl || "");
       } else {
@@ -81,10 +82,8 @@ export function ProductFormDialog({ productToEdit, onFormSubmit }: ProductFormDi
           name: "",
           description: "",
           imageUrl: "",
-          dailyRate: "",
-          weeklyRate: "",
-          monthlyRate: "",
           available: true,
+          categoryId: "",
         });
         setUploadedImageUrl("");
       }
@@ -93,18 +92,14 @@ export function ProductFormDialog({ productToEdit, onFormSubmit }: ProductFormDi
         name: productToEdit.name,
         description: productToEdit.description || "",
         imageUrl: productToEdit.imageUrl || "",
-        dailyRate: productToEdit.dailyRate || "",
-        weeklyRate: productToEdit.weeklyRate || "",
-        monthlyRate: productToEdit.monthlyRate || "",
         available: productToEdit.available,
+          categoryId: productToEdit.categoryId || "",
       } : {
         name: "",
         description: "",
         imageUrl: "",
-        dailyRate: "",
-        weeklyRate: "",
-        monthlyRate: "",
         available: true,
+          categoryId: "",
       });
       setUploadedImageUrl(isEditMode && productToEdit ? productToEdit.imageUrl || "" : "");
     }
@@ -123,10 +118,8 @@ export function ProductFormDialog({ productToEdit, onFormSubmit }: ProductFormDi
         ...values,
         name: values.name as string,
         imageUrl: uploadedImageUrl || values.imageUrl || null,
-        dailyRate: values.dailyRate || null,
-        weeklyRate: values.weeklyRate || null,
-        monthlyRate: values.monthlyRate || null,
         available: values.available,
+        categoryId: values.categoryId || null,
       };
 
       let result;
@@ -148,10 +141,8 @@ export function ProductFormDialog({ productToEdit, onFormSubmit }: ProductFormDi
             name: "",
             description: "",
             imageUrl: "",
-            dailyRate: "",
-            weeklyRate: "",
-            monthlyRate: "",
             available: true,
+          categoryId: "",
           });
           setUploadedImageUrl("");
         }
@@ -178,146 +169,123 @@ export function ProductFormDialog({ productToEdit, onFormSubmit }: ProductFormDi
     }}>
       <DialogTrigger asChild>
         {isEditMode ? (
-          <Button variant="outline" size="sm">
-            <Pencil1Icon className="h-4 w-4 mr-1" /> Edit
+          <Button variant="outline" size="sm" className="rounded-none border-2 border-slate-900 bg-white hover:bg-slate-900 hover:text-white text-slate-900 font-bold uppercase tracking-widest text-xs h-9 transition-colors focus-visible:ring-0">
+            <Pencil1Icon className="h-4 w-4 mr-2" /> EDIT
           </Button>
         ) : (
-          <Button className="flex gap-2 items-center">
-            <PlusCircledIcon className="h-4 w-4" /> Add New Product
+          <Button className="rounded-none border-2 border-slate-900 bg-slate-900 hover:bg-white hover:text-slate-900 text-white font-black uppercase tracking-widest text-sm h-11 px-6 transition-colors flex gap-2 items-center focus-visible:ring-0">
+            <PlusCircledIcon className="h-5 w-5" /> NEW MACHINE
           </Button>
         )}
       </DialogTrigger>
       
-      <DialogContent className="w-full max-w-lg sm:max-w-xl md:max-w-2xl overflow-y-auto max-h-[90vh] px-4 py-6 sm:px-6">
-        <DialogHeader className="mb-4">
-          <DialogTitle className="text-xl">{isEditMode ? 'Edit Product' : 'Add New Product'}</DialogTitle>
-          <DialogDescription>
-            {isEditMode ? 'Edit the product/equipment details.' : 'Fill in the details of the new product.'}
+      <DialogContent className="w-full max-w-lg sm:max-w-xl md:max-w-2xl px-0 py-0 rounded-none border-2 border-slate-900 bg-white">
+        <DialogHeader className="p-6 border-b-2 border-slate-900 bg-slate-50">
+          <DialogTitle className="text-2xl font-black uppercase tracking-widest text-slate-900">
+            {isEditMode ? 'Edit Equipment' : 'New Equipment'}
+          </DialogTitle>
+          <DialogDescription className="text-slate-600 font-medium uppercase tracking-wider text-xs">
+            {isEditMode ? 'Modify machine specifications.' : 'Register new machine to the fleet.'}
           </DialogDescription>
         </DialogHeader>
         
-        <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4 py-4">
-          {/* Basic Information */}
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="name" className="text-sm font-medium mb-1.5 block">Name</Label>
-              <Input 
-                id="name" 
-                {...form.register("name")} 
-                required 
-                className="w-full"
-              />
-              {form.formState.errors.name && (
-                <p className="text-xs text-red-500 mt-1">{form.formState.errors.name.message}</p>
-              )}
-            </div>
-            
-            <div>
-              <Label htmlFor="description" className="text-sm font-medium mb-1.5 block">Description</Label>
-              <Textarea 
-                id="description" 
-                {...form.register("description")} 
-                placeholder="Enter product description..." 
-                className="w-full resize-none min-h-[80px]"
-              />
-              {form.formState.errors.description && (
-                <p className="text-xs text-red-500 mt-1">{form.formState.errors.description.message}</p>
-              )}
-            </div>
-          </div>
-          
-          {/* Pricing Section */}
-          <div className="pt-2 border-t space-y-4">
-            <h3 className="text-sm font-semibold mb-3">Pricing</h3>
-            
-            <div className="space-y-3">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="gap-0 py-0 flex flex-col">
+          <div className="p-6 space-y-6">
+            {/* Basic Information */}
+            <div className="space-y-6">
               <div>
-                <Label htmlFor="dailyRate" className="text-sm font-medium mb-1.5 block">Daily Rate (£)</Label>
-                <Input 
-                  id="dailyRate" 
-                  type="number" 
-                  step="0.01" 
-                  {...form.register("dailyRate")} 
-                  className="w-full"
+                <Label className="text-xs font-black uppercase tracking-widest text-slate-900 mb-2 block">Category</Label>
+                <Controller
+                  name="categoryId"
+                  control={form.control}
+                  render={({ field }) => (
+                    <select 
+                      {...field} 
+                      className="w-full h-12 rounded-none border-2 border-slate-300 focus-visible:ring-0 focus-visible:border-primary font-medium text-slate-900 uppercase bg-white px-3 mb-6 block"
+                    >
+                      <option value="">Uncategorized</option>
+                      {categories.map(c => (
+                        <option key={c.id} value={c.id}>{c.name}</option>
+                      ))}
+                    </select>
+                  )}
                 />
-                {form.formState.errors.dailyRate && (
-                  <p className="text-xs text-red-500 mt-1">{form.formState.errors.dailyRate.message}</p>
+              </div>
+              <div>
+                <Label htmlFor="name" className="text-xs font-black uppercase tracking-widest text-slate-900 mb-2 block">Machine Name</Label>
+                <Input 
+                  id="name" 
+                  {...form.register("name")} 
+                  required 
+                  className="w-full h-12 rounded-none border-2 border-slate-300 focus-visible:ring-0 focus-visible:border-primary font-medium text-slate-900 uppercase"
+                  placeholder="e.g. EXCAVATOR 1.5T"
+                />
+                {form.formState.errors.name && (
+                  <p className="text-xs text-red-600 font-bold uppercase mt-2 tracking-wider">{form.formState.errors.name.message}</p>
                 )}
               </div>
               
               <div>
-                <Label htmlFor="weeklyRate" className="text-sm font-medium mb-1.5 block">Weekly Rate (£)</Label>
-                <Input 
-                  id="weeklyRate" 
-                  type="number" 
-                  step="0.01" 
-                  {...form.register("weeklyRate")} 
-                  className="w-full"
+                <Label htmlFor="description" className="text-xs font-black uppercase tracking-widest text-slate-900 mb-2 block">Machine Details</Label>
+                <Textarea 
+                  id="description" 
+                  {...form.register("description")} 
+                  placeholder="Enter specifications and operational details..." 
+                  className="w-full min-h-[100px] rounded-none border-2 border-slate-300 focus-visible:ring-0 focus-visible:border-primary font-medium text-slate-900 resize-none"
                 />
-                {form.formState.errors.weeklyRate && (
-                  <p className="text-xs text-red-500 mt-1">{form.formState.errors.weeklyRate.message}</p>
-                )}
-              </div>
-              
-              <div>
-                <Label htmlFor="monthlyRate" className="text-sm font-medium mb-1.5 block">Monthly Rate (£)</Label>
-                <Input 
-                  id="monthlyRate" 
-                  type="number" 
-                  step="0.01" 
-                  {...form.register("monthlyRate")} 
-                  className="w-full"
-                />
-                {form.formState.errors.monthlyRate && (
-                  <p className="text-xs text-red-500 mt-1">{form.formState.errors.monthlyRate.message}</p>
+                {form.formState.errors.description && (
+                  <p className="text-xs text-red-600 font-bold uppercase mt-2 tracking-wider">{form.formState.errors.description.message}</p>
                 )}
               </div>
             </div>
-          </div>
-          
-          {/* Availability */}
-          <div className="flex items-center space-x-2 pt-2">
-            <Controller
-              control={form.control}
-              name="available"
-              defaultValue={isEditMode ? productToEdit?.available : true}
-              render={({ field }) => (
-                <Switch
-                  id="available"
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                  ref={field.ref}
+            
+            {/* Availability */}
+            <div className="flex items-center space-x-3 bg-slate-50 p-4 border border-slate-200">
+              <Controller
+                control={form.control}
+                name="available"
+                defaultValue={isEditMode ? productToEdit?.available : true}
+                render={({ field }) => (
+                  <Switch
+                    id="available"
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                    ref={field.ref}
+                    className="data-[state=checked]:bg-primary"
+                  />
+                )}
+              />
+              <Label htmlFor="available" className="font-extrabold text-sm uppercase tracking-widest text-slate-900">Available For Deploy</Label>
+            </div>
+            
+            {/* Image Upload */}
+            <div className="pt-6 border-t-2 border-slate-100">
+              <Label className="text-xs font-black uppercase tracking-widest text-slate-900 mb-4 block">Fleet Image</Label>
+              <div className="border-2 border-slate-300 p-2 border-dashed bg-slate-50">
+                <FileUpload 
+                  onUploadSuccess={handleUploadSuccess} 
+                  initialImageUrl={uploadedImageUrl}
+                  label=""
                 />
+              </div>
+              {form.formState.errors.imageUrl && (
+                <p className="text-xs text-red-600 font-bold uppercase mt-2 tracking-wider">{form.formState.errors.imageUrl.message}</p>
               )}
-            />
-            <Label htmlFor="available" className="font-medium text-sm">Available for Hire</Label>
-          </div>
-          
-          {/* Image Upload */}
-          <div className="pt-2 border-t">
-            <h3 className="text-sm font-semibold mb-3">Product Image</h3>
-            <FileUpload 
-              onUploadSuccess={handleUploadSuccess} 
-              initialImageUrl={uploadedImageUrl}
-              label=""
-            />
-            {form.formState.errors.imageUrl && (
-              <p className="text-xs text-red-500 mt-1">{form.formState.errors.imageUrl.message}</p>
+            </div>
+
+            {form.formState.errors.root && (
+              <p className="text-xs font-bold uppercase tracking-wider text-white bg-red-600 p-3">
+                {form.formState.errors.root.message}
+              </p>
             )}
           </div>
-
-          {form.formState.errors.root && (
-            <p className="text-sm text-red-600 bg-red-100 p-2 rounded-md">
-              {form.formState.errors.root.message}
-            </p>
-          )}
           
-          <DialogFooter className="pt-4 mt-4 border-t">
-            <Button type="submit" disabled={isSaving} className="w-full">
-              {isSaving && <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />} 
+          <DialogFooter className="p-6 border-t-2 border-slate-900 bg-slate-50">
+            <Button type="submit" disabled={isSaving} className="w-full h-14 rounded-none bg-slate-900 hover:bg-primary text-white font-black uppercase tracking-widest text-sm transition-colors flex items-center justify-center">
+              {isSaving && <ReloadIcon className="mr-3 h-5 w-5 animate-spin" />} 
               {isSaving 
-                ? (isEditMode ? 'Updating...' : 'Adding...') 
-                : (isEditMode ? 'Update Product' : 'Add Product')
+                ? 'PROCESSING...' 
+                : (isEditMode ? 'UPDATE MACHINE' : 'REGISTER MACHINE')
               }
             </Button>
           </DialogFooter>

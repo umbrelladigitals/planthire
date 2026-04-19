@@ -2,8 +2,14 @@ import { db } from "@/lib/db";
 import { AuditLogAction } from "@/lib/audit-types";
 import { NextResponse } from "next/server";
 import type { AuditLog } from "@prisma/client";
+import { auth } from "@/auth";
 
 export async function GET() {
+  const session = await auth();
+  if (!session?.user?.isAdmin) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     // Örnek aktivite kayıtları oluştur
     const sampleAuditLogs = [

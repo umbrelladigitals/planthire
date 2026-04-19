@@ -13,6 +13,7 @@ import { MailOpen, Trash2 } from "lucide-react";
 import { db } from "@/lib/db";
 import { ContactDetailDialog } from "@/components/panel/contact-detail-dialog";
 import { markContactAsReadAction, deleteContactAction } from "@/actions/contact-actions";
+import { AdminPageHeader } from "@/components/panel/admin-page-header";
 
 // Type definition
 interface ContactRequest {
@@ -49,50 +50,50 @@ export default async function ContactRequestsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight">Contact Requests</h2>
-        <p className="text-muted-foreground">
-          Manage contact form submissions from your website.
-          {unreadCount > 0 && (
-            <Badge variant="destructive" className="ml-2">
-              {unreadCount} unread
+      <AdminPageHeader 
+        title="CONTACT REQUESTS"
+        description="Manage and review contact form submissions."
+        action={
+          unreadCount > 0 ? (
+            <Badge variant="destructive" className="rounded-none uppercase font-black tracking-wider px-3 py-1">
+              {unreadCount} UNREAD
             </Badge>
-          )}
-        </p>
-      </div>
+          ) : undefined
+        }
+      />
       
-      <div className="rounded-md border">
+      <div className="bg-white border-2 border-slate-900 overflow-hidden">
         <Table>
-          <TableCaption>A list of recent contact form submissions.</TableCaption>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[180px]">Name</TableHead>
-              <TableHead>Contact Info</TableHead>
-              <TableHead>Equipment</TableHead>
-              <TableHead className="w-[150px]">Date</TableHead>
-              <TableHead className="w-[100px]">Status</TableHead>
-              <TableHead className="text-right w-[120px]">Actions</TableHead>
+          <TableCaption className="text-slate-500 font-bold uppercase tracking-widest text-xs mb-4">A list of recent contact form submissions.</TableCaption>
+          <TableHeader className="bg-slate-50 border-b-2 border-slate-900">
+            <TableRow className="hover:bg-transparent">
+              <TableHead className="w-[180px] font-black tracking-widest uppercase text-slate-900">Name</TableHead>
+              <TableHead className="font-black tracking-widest uppercase text-slate-900">Contact Info</TableHead>
+              <TableHead className="font-black tracking-widest uppercase text-slate-900">Equipment</TableHead>
+              <TableHead className="w-[150px] font-black tracking-widest uppercase text-slate-900">Date</TableHead>
+              <TableHead className="w-[100px] font-black tracking-widest uppercase text-slate-900">Status</TableHead>
+              <TableHead className="text-right w-[120px] font-black tracking-widest uppercase text-slate-900">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {contactRequests.map((request) => (
-              <TableRow key={request.id} className={!request.isRead ? "bg-blue-50/50 dark:bg-blue-950/20" : ""}>
-                <TableCell className="font-medium">
+              <TableRow key={request.id} className={!request.isRead ? "bg-slate-100 hover:bg-slate-200 border-b border-slate-200" : "hover:bg-slate-50 border-b border-slate-200"}>
+                <TableCell className="font-bold text-slate-900 uppercase">
                   {request.fullName}
                 </TableCell>
                 <TableCell>
-                  <div className="text-sm">
+                  <div className="text-xs font-medium text-slate-700">
                     <p>{request.email}</p>
-                    {request.phone && <p className="text-muted-foreground">{request.phone}</p>}
+                    {request.phone && <p>{request.phone}</p>}
                   </div>
                 </TableCell>
-                <TableCell>{request.equipment || "-"}</TableCell>
-                <TableCell>{formatDate(request.createdAt)}</TableCell>
+                <TableCell className="text-sm font-medium text-slate-700">{request.equipment || "-"}</TableCell>
+                <TableCell className="text-sm font-medium text-slate-700">{formatDate(request.createdAt)}</TableCell>
                 <TableCell>
                   {!request.isRead ? (
-                    <Badge>New</Badge>
+                    <Badge className="rounded-none bg-primary text-white font-black hover:bg-primary tracking-widest uppercase text-[10px]">NEW</Badge>
                   ) : (
-                    <Badge variant="outline">Viewed</Badge>
+                    <Badge variant="outline" className="rounded-none border-2 border-slate-300 text-slate-500 font-bold tracking-widest uppercase text-[10px]">READ</Badge>
                   )}
                 </TableCell>
                 <TableCell className="text-right">
@@ -106,7 +107,7 @@ export default async function ContactRequestsPage() {
                         'use server';
                         await markContactAsReadAction(request.id);
                       }}>
-                        <Button variant="outline" size="icon" title="Mark as Read" type="submit">
+                        <Button variant="outline" size="sm" title="Mark as Read" type="submit" className="rounded-none border-2 border-slate-900 bg-white hover:bg-slate-900 hover:text-white text-slate-900 transition-colors h-9 w-9 p-0">
                           <MailOpen className="h-4 w-4" />
                         </Button>
                       </form>
@@ -117,8 +118,8 @@ export default async function ContactRequestsPage() {
                       'use server';
                       await deleteContactAction(request.id);
                     }}>
-                      <Button variant="outline" size="icon" title="Delete" type="submit"
-                        className="text-red-500 hover:text-red-700 hover:bg-red-50">
+                      <Button variant="outline" size="sm" title="Delete" type="submit"
+                        className="rounded-none border-2 border-red-500 bg-white hover:bg-red-500 hover:text-white text-red-500 transition-colors h-9 w-9 p-0">
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </form>
@@ -131,8 +132,8 @@ export default async function ContactRequestsPage() {
       </div>
       
       {contactRequests.length === 0 && (
-        <div className="text-center py-10">
-          <p className="text-muted-foreground">No contact requests yet.</p>
+        <div className="text-center py-16 bg-white border-2 border-slate-900">
+          <p className="text-slate-500 font-bold uppercase tracking-widest">No contact requests found.</p>
         </div>
       )}
     </div>

@@ -1,6 +1,12 @@
+import type { Metadata } from "next";
 import { auth } from "@/auth";
 import { PanelHeader } from "@/components/panel/panel-header";
 import { redirect } from "next/navigation";
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+  title: "Admin Panel",
+};
 
 export default async function PanelLayout({
   children,
@@ -20,10 +26,10 @@ export default async function PanelLayout({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-slate-50 selection:bg-primary selection:text-white">
       <PanelHeader user={session.user} />
       
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-12">
         {children}
       </main>
     </div>

@@ -12,6 +12,7 @@ import {
 } from "@/lib/settings";
 import { AuditLogAction } from "@/lib/audit-types";
 import { createAuditLog } from "@/lib/audit";
+import { requireAdmin } from "@/lib/auth-guard";
 
 /**
  * Server action to get Google Analytics settings
@@ -36,6 +37,9 @@ export async function getGoogleAnalyticsSettingsAction() {
  * Server action to update Google Analytics settings
  */
 export async function updateGoogleAnalyticsSettingsAction(formData: FormData) {
+  const authError = await requireAdmin();
+  if (authError) return authError;
+
   try {
     const trackingId = formData.get('trackingId') as string;
     const enabled = formData.get('enabled') === 'true';
@@ -90,6 +94,9 @@ export async function getGeneralSettingsAction() {
  * Server action to update general settings
  */
 export async function updateGeneralSettingsAction(formData: FormData) {
+  const authError = await requireAdmin();
+  if (authError) return authError;
+
   try {
     const siteName = formData.get('siteName') as string;
     const siteDescription = formData.get('siteDescription') as string;
@@ -142,6 +149,9 @@ export async function getSocialMediaSettingsAction() {
  * Server action to update social media settings
  */
 export async function updateSocialMediaSettingsAction(formData: FormData) {
+  const authError = await requireAdmin();
+  if (authError) return authError;
+
   try {
     const facebook = formData.get('facebook') as string;
     const instagram = formData.get('instagram') as string;
