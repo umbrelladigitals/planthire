@@ -23,7 +23,7 @@ export function Navbar() {
         <div className="hidden md:flex items-center gap-4">
           <div className="flex items-center gap-2 text-slate-600 border-r border-slate-200 pr-6 mr-2">
              <Phone className="h-4 w-4 text-primary" />
-             <span className="font-bold tracking-wider text-[11px]">+44 123 456 7890</span>
+             <span className="font-bold tracking-wider text-[11px]">+44 7312 110885</span>
           </div>
           <Button asChild className="rounded-none bg-slate-900 hover:bg-primary text-white font-bold uppercase tracking-widest text-[11px] h-12 px-6 transition-colors group">
             <Link href="#contact" className="flex items-center">
@@ -64,7 +64,7 @@ export function Navbar() {
                       <div className="bg-white p-2 border border-slate-200">
                         <Phone className="h-4 w-4 text-primary" />
                       </div>
-                      <span>+44 123 456 7890</span>
+                      <span>+44 7312 110885</span>
                     </div>
                     <div className="flex items-center gap-4 text-slate-700 font-bold text-xs tracking-wider">
                       <div className="bg-white p-2 border border-slate-200">
@@ -76,7 +76,7 @@ export function Navbar() {
                       <div className="bg-white p-2 border border-slate-200">
                         <MapPin className="h-4 w-4 text-primary" />
                       </div>
-                      <span>Aberdeenshire, UK</span>
+                      <span>High street new pitsligo<br/>Fraserburgh<br/>United Kingdom</span>
                     </div>
                   </div>
                 </div>

@@ -38,9 +38,9 @@ export async function getSetting(key: string): Promise<string | null> {
     // Örnek: Sadece metadata için placeholder değerler döndür
     switch (key) {
       case SETTINGS_KEYS.SITE_NAME:
-        return "Varsayılan Site Adı";
+        return "Aberdeenshire Plant Hire";
       case SETTINGS_KEYS.SITE_DESCRIPTION:
-        return "Varsayılan Site Açıklaması";
+        return "Your trusted partner for high-quality plant and machinery hire in Aberdeenshire.";
       // Diğer ayarlar için varsayılan null veya başka bir değer
       default:
         return null;

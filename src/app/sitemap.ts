@@ -1,5 +1,6 @@
 import { MetadataRoute } from "next";
-import { db } from "@/lib/db";
+
+export const dynamic = "force-dynamic";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://aberdeenshireplanthire.co.uk";
@@ -19,17 +20,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ];
 
-  const products = await db.equipment.findMany({
-    select: { id: true, updatedAt: true },
-    orderBy: { updatedAt: "desc" },
-  });
+  try {
+    const { db } = await import("@/lib/db");
+    const products = await db.equipment.findMany({
+      select: { id: true, updatedAt: true },
+      orderBy: { updatedAt: "desc" },
+    });
 
-  const productRoutes: MetadataRoute.Sitemap = products.map((p) => ({
-    url: `${SITE_URL}/products/${p.id}`,
-    lastModified: p.updatedAt,
-    changeFrequency: "monthly" as const,
-    priority: 0.7,
-  }));
+    const productRoutes: MetadataRoute.Sitemap = products.map((p) => ({
+      url: `${SITE_URL}/products/${p.id}`,
+      lastModified: p.updatedAt,
+      changeFrequency: "monthly" as const,
+      priority: 0.7,
+    }));
 
-  return [...staticRoutes, ...productRoutes];
+    return [...staticRoutes, ...productRoutes];
+  } catch {
+    return staticRoutes;
+  }
 }
