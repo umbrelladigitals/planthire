@@ -1,5 +1,5 @@
 # Dockerfile for Next.js application
-FROM node:18-alpine AS base
+FROM node:20-alpine AS base
 
 # Build stage: Install dependencies and build the application
 FROM base AS builder
@@ -70,6 +70,8 @@ COPY --from=builder --chown=nextjs:nodejs /app/package.json ./package.json
 COPY --from=builder --chown=nextjs:nodejs /app/start.sh ./start.sh
 RUN chmod +x ./start.sh
 
+ENV npm_config_cache=/tmp
+RUN npm install -g prisma@6.7.0
 
 USER nextjs
 

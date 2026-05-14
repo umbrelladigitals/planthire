@@ -9,8 +9,8 @@ services:
       POSTGRES_USER: planthire
       POSTGRES_PASSWORD: Planthire367%2B%3F
       POSTGRES_DB: planthire
-    ports:
-      - "5433:5432"
+    expose:
+      - "5432"
     volumes:
       - db_data:/var/lib/postgresql/data
     networks:
@@ -22,6 +22,10 @@ services:
     restart: always
     ports:
       - "3007:3000"
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /app/.next/cache
     env_file:
       - .env
     environment:
