@@ -26,6 +26,8 @@ services:
     tmpfs:
       - /tmp
       - /app/.next/cache
+    volumes:
+      - uploads_data:/app/public/uploads
     env_file:
       - .env
     environment:
@@ -44,3 +46,4 @@ networks:
 
 volumes:
   db_data:
+  uploads_data:
